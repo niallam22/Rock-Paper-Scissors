@@ -9,7 +9,7 @@ const server = http.createServer((req, res) => {
   const page = url.parse(req.url).pathname;
   const params = querystring.parse(url.parse(req.url).query);
   console.log(page);
-
+  
   if (page == '/') {
     fs.readFile('index.html', function(err, data) {
       res.writeHead(200, {'Content-Type': 'text/html'});
@@ -17,6 +17,7 @@ const server = http.createServer((req, res) => {
       res.end();
     });
   }
+
   else if (page == '/otherpage') {
     fs.readFile('otherpage.html', function(err, data) {
       res.writeHead(200, {'Content-Type': 'text/html'});
@@ -24,6 +25,7 @@ const server = http.createServer((req, res) => {
       res.end();
     });
   }
+
   else if (page == '/otherotherpage') {
     fs.readFile('otherotherpage.html', function(err, data) {
       res.writeHead(200, {'Content-Type': 'text/html'});
@@ -32,27 +34,36 @@ const server = http.createServer((req, res) => {
     });
   }
   else if (page == '/api') {
-    if('student' in params){
-      if(params['student']== 'leon'){
-        res.writeHead(200, {'Content-Type': 'application/json'});
-        const objToJson = {
-          name: "leon",
-          status: "Boss Man",
-          currentOccupation: "Baller"
+    if('choice' in params){
+      const choice = params.choice
+      res.writeHead(200, {'Content-Type': 'application/json'});
+      let rockPaperScissors = {
+        generateChoice(){
+          let rand = Math.ceil(Math.random()*3)
+          let compResult = rand === 1 ? 'Rock': rand === 2 ? 'Paper' : 'Scissors'
+          return compResult
+        },
+        checkWinner(choice){
+          const compResult = this.generateChoice()
+          if(compResult === choice) return 'Drew'
+          else if(compResult === 'Rock' && choice === 'Paper') return 'Win'
+          else if(compResult === 'Rock' && choice === 'Scissors') return 'Lose'
+          else if(compResult === 'Scissors' && choice === 'Paper') return 'Lose'
+          else if(compResult === 'Scissors' && choice === 'Rock') return 'Win'
+          else if(compResult === 'Paper' && choice === 'Scissors') return 'Win'
+          else if(compResult === 'Paper' && choice === 'Rock') return 'Lose'
+        },
+        objToJsonResult(){
+          const result = {result: this.checkWinner(choice)}
+          return result
         }
-        res.end(JSON.stringify(objToJson));
-      }//student = leon
-      else if(params['student'] != 'leon'){
-        res.writeHead(200, {'Content-Type': 'application/json'});
-        const objToJson = {
-          name: "unknown",
-          status: "unknown",
-          currentOccupation: "unknown"
-        }
-        res.end(JSON.stringify(objToJson));
-      }//student != leon
-    }//student if
-  }//else if url request is looking for  css/style.css return style.css
+      }
+        console.log(choice)
+        console.log(rockPaperScissors.objToJsonResult(choice))
+        res.end(JSON.stringify(rockPaperScissors.objToJsonResult(choice)));
+    }
+    }
+
   else if (page == '/css/style.css'){
     fs.readFile('css/style.css', function(err, data) {
       res.write(data);
@@ -78,3 +89,4 @@ const server = http.createServer((req, res) => {
 });
 
 server.listen(8000);
+
